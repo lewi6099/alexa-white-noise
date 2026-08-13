@@ -19,6 +19,12 @@ const Alexa = require('ask-sdk-core');
 const AUDIO_URL = 'https://cdn.jsdelivr.net/gh/lewi6099/alexa-white-noise@6f93110439889b6340cbcc71a9523dace141fcee/whitenoise.mp3';
 const AUDIO_TOKEN = 'white-noise-loop';
 
+// Played once on launch/resume: same content as AUDIO_URL but with a slow
+// 5s fade-in, for a gentle start. Its tail matches AUDIO_URL's short fade
+// so the handoff into the regular loop track is still seamless.
+const AUDIO_URL_INTRO = 'https://cdn.jsdelivr.net/gh/lewi6099/alexa-white-noise@1bab18b203cbc8d1c5613ae20e454032b255f20d/whitenoise_intro.mp3';
+const AUDIO_TOKEN_INTRO = 'white-noise-intro';
+
 // Starts playback from the beginning when the skill is opened.
 const LaunchRequestHandler = {
   canHandle(handlerInput) {
@@ -26,7 +32,7 @@ const LaunchRequestHandler = {
   },
   handle(handlerInput) {
     return handlerInput.responseBuilder
-      .addAudioPlayerPlayDirective('REPLACE_ALL', AUDIO_URL, AUDIO_TOKEN, 0, null)
+      .addAudioPlayerPlayDirective('REPLACE_ALL', AUDIO_URL_INTRO, AUDIO_TOKEN_INTRO, 0, null)
       .withShouldEndSession(true)
       .getResponse();
   }
@@ -122,7 +128,7 @@ const ResumePlaybackHandler = {
   },
   handle(handlerInput) {
     return handlerInput.responseBuilder
-      .addAudioPlayerPlayDirective('REPLACE_ALL', AUDIO_URL, AUDIO_TOKEN, 0, null)
+      .addAudioPlayerPlayDirective('REPLACE_ALL', AUDIO_URL_INTRO, AUDIO_TOKEN_INTRO, 0, null)
       .getResponse();
   }
 };
