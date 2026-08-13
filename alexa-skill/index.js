@@ -13,7 +13,10 @@
 
 const Alexa = require('ask-sdk-core');
 
-const AUDIO_URL = 'https://cdn.jsdelivr.net/gh/lewi6099/alexa-white-noise/whitenoise.mp3';
+// Pinned to a commit hash (rather than tracking the branch HEAD) so jsdelivr
+// caches it as immutable for up to a year instead of revalidating against
+// GitHub every 12 hours. Bump this hash if whitenoise.mp3 is ever replaced.
+const AUDIO_URL = 'https://cdn.jsdelivr.net/gh/lewi6099/alexa-white-noise@6f93110439889b6340cbcc71a9523dace141fcee/whitenoise.mp3';
 const AUDIO_TOKEN = 'white-noise-loop';
 
 // Starts playback from the beginning when the skill is opened.
@@ -77,13 +80,19 @@ const PlaybackStoppedHandler = {
   }
 };
 
+// Alexa does not automatically retry a stream after a playback error, so
+// without this the skill goes silent until manually relaunched. Since this
+// is an endless white noise loop with no meaningful position, it's always
+// safe to just restart playback from the beginning.
 const PlaybackFailedHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'AudioPlayer.PlaybackFailed';
   },
   handle(handlerInput) {
     console.log('Playback failed:', JSON.stringify(handlerInput.requestEnvelope.request.error));
-    return handlerInput.responseBuilder.getResponse();
+    return handlerInput.responseBuilder
+      .addAudioPlayerPlayDirective('REPLACE_ALL', AUDIO_URL, AUDIO_TOKEN, 0, null)
+      .getResponse();
   }
 };
 
